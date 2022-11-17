@@ -8,6 +8,7 @@ contract Manager is Ownable {
   
   address private admin;
   Ticket[] public tickets;
+  Ticket[] public ticketsToOwner;
   Ticket public aTicket;
 
   receive() external payable {}
@@ -20,33 +21,35 @@ contract Manager is Ownable {
   event TicketCreated(Ticket newTicket);
 
   modifier isTransferable(uint ticketId) {
-    bool ticket = false;
-    aTicket = new Ticket();
-    for (uint i = 0; i < tickets.length; i++) {
-      if(tickets[i].id == ticketId) {
-        if(tickets[i].transferStatus == "Transferable") {
-          ticket = true;
-        }
-      }
-    }
-    require(ticket, "Ticket is not transferable");
+    // TODO
     _;
   }
 
-  function createTicket(Ticket _newTicket) public {
-    // TODO
-    aTicket = _newTicket;
+  function createTicket(string memory _eventName, string memory _eventDate, uint _price, string memory _eventDescription, uint _eventType) public {
+    aTicket = new Ticket(_eventName, _eventDate, _price, _eventDescription, Ticket.EventType(_eventType));
     tickets.push(aTicket);
 
-    emit TicketCreated(_newTicket);
+    ticketsByAddress[msg.sender].push(aTicket);
+
+    /* for (uint i = 0; i < tickets.length; i++) {
+      if (tickets[i].owner() == msg.sender) {
+        ticketsToOwner.push(tickets[i]);
+      }
+      ticketsByAddress[msg.sender] = ticketsToOwner;
+      
+    } */
+
+    emit TicketCreated(aTicket);
   }
 
   function showAllTickets() public view returns(Ticket[] memory) {
     return tickets;
   }
 
+  mapping(address => Ticket[]) ticketsByAddress;
+
   function showTicketsByAddress(address _ticketsOwner) public view returns (Ticket[] memory) {
-    // TODO
+    return ticketsByAddress[_ticketsOwner];
   }
 
 
